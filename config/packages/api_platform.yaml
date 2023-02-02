@@ -1,0 +1,11 @@
+api_platform:
+    title: 'API ANIME'
+    description: 'description'
+    version: '1.0.0'
+    show_webby: false
+    swagger:
+        versions: [3]
+        api_keys:
+            apiKey:
+                name: Authorization
+                type: header

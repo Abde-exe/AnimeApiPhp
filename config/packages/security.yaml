@@ -50,6 +50,7 @@ security:
         - { path: ^/api/animes, roles: ROLE_USER }
         - { path: ^/api/characters, roles: ROLE_USER }
         - { path: ^/api/studios, roles: ROLE_USER }
+        - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
 
 when@test:

@@ -45,12 +45,19 @@ class AppFixtures extends Fixture
 
         for ($i = 1; $i <= 10; $i++) {
             $user = new User();
-            $user->setEmail('user' . $i . '@gmail.com');
+            $user->setEmail('user' . $i . '@mail.com');
             $user->setPassword($this->passwordHasher->hashPassword($user, 'password'));
-            //$user->setApiKey('api_key_' . $i);
 
             $manager->persist($user);
         }
+
+        $admin = new User();
+        $admin->setEmail('admin@mail.com');
+        $admin->setPassword($this->passwordHasher->hashPassword($admin, 'admin'));
+        $admin->setRoles(['ROLE_ADMIN']);
+
+        $manager->persist($admin);
+
 
         $manager->flush();
     }

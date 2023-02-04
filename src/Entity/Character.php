@@ -7,6 +7,8 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use App\Repository\CharacterRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -32,6 +34,18 @@ class Character
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $img = null;
+
+    #[ORM\ManyToOne(inversedBy: 'characters')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Anime $anime = null;
+
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'favCharacters')]
+    private Collection $usersFaving;
+
+    public function __construct()
+    {
+        $this->usersFaving = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -70,6 +84,45 @@ class Character
     public function setImg(?string $img): self
     {
         $this->img = $img;
+
+        return $this;
+    }
+
+    public function getAnime(): ?Anime
+    {
+        return $this->anime;
+    }
+
+    public function setAnime(?Anime $anime): self
+    {
+        $this->anime = $anime;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getUsersFaving(): Collection
+    {
+        return $this->usersFaving;
+    }
+
+    public function addUsersFaving(User $usersFaving): self
+    {
+        if (!$this->usersFaving->contains($usersFaving)) {
+            $this->usersFaving->add($usersFaving);
+            $usersFaving->addFavCharacter($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUsersFaving(User $usersFaving): self
+    {
+        if ($this->usersFaving->removeElement($usersFaving)) {
+            $usersFaving->removeFavCharacter($this);
+        }
 
         return $this;
     }

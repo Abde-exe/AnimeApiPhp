@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -28,6 +30,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column]
     private ?string $password = null;
+
+    #[ORM\ManyToMany(targetEntity: Anime::class, inversedBy: 'usersFaving')]
+    private Collection $favAnimes;
+
+    #[ORM\ManyToMany(targetEntity: Character::class, inversedBy: 'usersFaving')]
+    private Collection $favCharacters;
+
+    public function __construct()
+    {
+        $this->favAnimes = new ArrayCollection();
+        $this->favCharacters = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -97,5 +111,53 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    /**
+     * @return Collection<int, Anime>
+     */
+    public function getFavAnimes(): Collection
+    {
+        return $this->favAnimes;
+    }
+
+    public function addFavAnime(Anime $favAnime): self
+    {
+        if (!$this->favAnimes->contains($favAnime)) {
+            $this->favAnimes->add($favAnime);
+        }
+
+        return $this;
+    }
+
+    public function removeFavAnime(Anime $favAnime): self
+    {
+        $this->favAnimes->removeElement($favAnime);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Character>
+     */
+    public function getFavCharacters(): Collection
+    {
+        return $this->favCharacters;
+    }
+
+    public function addFavCharacter(Character $favCharacter): self
+    {
+        if (!$this->favCharacters->contains($favCharacter)) {
+            $this->favCharacters->add($favCharacter);
+        }
+
+        return $this;
+    }
+
+    public function removeFavCharacter(Character $favCharacter): self
+    {
+        $this->favCharacters->removeElement($favCharacter);
+
+        return $this;
     }
 }

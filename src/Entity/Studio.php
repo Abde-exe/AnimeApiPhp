@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\StudioRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: StudioRepository::class)]
@@ -18,6 +20,14 @@ class Studio
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
+    #[ORM\OneToMany(mappedBy: 'studio', targetEntity: Anime::class)]
+    private Collection $animes;
+
+    public function __construct()
+    {
+        $this->animes = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -31,6 +41,36 @@ class Studio
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Anime>
+     */
+    public function getAnimes(): Collection
+    {
+        return $this->animes;
+    }
+
+    public function addAnime(Anime $anime): self
+    {
+        if (!$this->animes->contains($anime)) {
+            $this->animes->add($anime);
+            $anime->setStudio($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAnime(Anime $anime): self
+    {
+        if ($this->animes->removeElement($anime)) {
+            // set the owning side to null (unless already changed)
+            if ($anime->getStudio() === $this) {
+                $anime->setStudio(null);
+            }
+        }
 
         return $this;
     }

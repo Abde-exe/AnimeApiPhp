@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Entity\Anime;
+use App\Entity\Studio;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -62,6 +63,7 @@ class ImportDataCommand extends Command
                 $anime->setTitle( $data['title']);
                 $anime->setImage($data['images']['jpg']['image_url']);
                 $anime->setGenres($data['genres']);
+                $anime->setStudio(new Studio('title'));
                 $this->entityManager->persist($anime);
             } catch (\Exception $e){
                 //error

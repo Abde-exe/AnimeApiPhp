@@ -44,7 +44,7 @@ class AnimeCrudController extends AbstractCrudController
              ->setFormType(VichImageType::class)
              ->onlyOnForms();
          yield ImageField::new('image', 'Cover image')
-             ->setBasePath($this->uploadDir)
+             ->setBasePath($this->uploadDir.'/animes/')
              ->hideOnForm();
          yield TextField::new('genres', 'Genre');
          yield AssociationField::new('studio', 'Animation studio')

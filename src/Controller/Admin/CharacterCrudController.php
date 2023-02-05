@@ -8,14 +8,21 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use Vich\UploaderBundle\Form\Type\VichImageType;
 
 class CharacterCrudController extends AbstractCrudController
 {
+    public function __construct(private string $uploadDir)
+    {
+    }
     public static function getEntityFqcn(): string
     {
         return Character::class;
     }
+
+
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
@@ -33,8 +40,14 @@ class CharacterCrudController extends AbstractCrudController
     {
 
         yield TextField::new('name', 'Name');
-        yield TextField::new('img', 'Image');
-        yield TextField::new('about', 'Bio');
+        yield TextField::new('about', 'Bio')
+            ->onlyOnForms();
+        yield TextField::new('file', 'Image' )
+            ->setFormType(VichImageType::class)
+            ->onlyOnForms();
+        yield ImageField::new('img', 'Image')
+            ->setBasePath($this->uploadDir.'/characters/')
+            ->hideOnForm();
         yield AssociationField::new('anime', 'Anime')
             ->setCrudController(AnimeCrudController::class);
 

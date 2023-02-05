@@ -11,6 +11,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation\Uploadable;
+use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
 
 #[ORM\Entity(repositoryClass: CharacterRepository::class)]
 #[ORM\Table(name: '`character`')]
@@ -19,6 +22,8 @@ use Doctrine\ORM\Mapping as ORM;
     new Get(),
     new GetCollection()]
 )]
+#[Uploadable]
+
 class Character
 {
     #[ORM\Id]
@@ -42,6 +47,8 @@ class Character
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'favCharacters')]
     private Collection $usersFaving;
 
+    #[UploadableField(mapping: 'characters', fileNameProperty:'img')]
+    private ?File $file = null;
     public function __construct()
     {
         $this->usersFaving = new ArrayCollection();
@@ -100,6 +107,10 @@ class Character
         return $this;
     }
 
+    public function __toString(){
+        return $this->name;
+    }
+
     /**
      * @return Collection<int, User>
      */
@@ -125,5 +136,21 @@ class Character
         }
 
         return $this;
+    }
+
+    /**
+     * @return File|null
+     */
+    public function getFile(): ?File
+    {
+        return $this->file;
+    }
+
+    /**
+     * @param File|null $file
+     */
+    public function setFile(?File $file): void
+    {
+        $this->file = $file;
     }
 }

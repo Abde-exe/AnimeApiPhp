@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Entity\Anime;
+use App\Entity\Character;
 use App\Entity\Studio;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -71,6 +72,7 @@ class ImportDataCommand extends Command
                 sleep(1);
             $json =  file_get_contents("https://api.jikan.moe/v4/anime/{$i}");
             $data = json_decode($json, true);
+
             if(isset($data['error'])){
                 error_log("Error retrieving anime with id {$i}: {$data['error']}");
                 continue;
@@ -82,7 +84,24 @@ class ImportDataCommand extends Command
                 $anime->setImage($data['images']['jpg']['image_url']);
                 $anime->setGenres($data['genres'][0]['name']);
                 $anime->setStudio($studioArray[$i % 5]);
-                array_push($animeArray, $anime);
+                //array_push($animeArray, $anime);
+                sleep(1);
+                $json2 =  file_get_contents("https://api.jikan.moe/v4/anime/{$i}/characters");
+                $data2 = json_decode($json2, true);
+                if(isset($data2['error'])){
+                    error_log("Error retrieving character for anime with id {$i}: {$data2['error']}");
+                    continue;
+                }
+                $dataChar = $data2["data"];
+                foreach ($dataChar as $char){
+                    $character = new Character();
+                    $character->setName($char["character"]["name"]);
+                    $character->setImg($char["character"]["images"]["jpg"]["image_url"]);
+                    $character->setAbout("");
+                    $anime->addCharacter($character);
+                    $this->entityManager->persist($character);
+                }
+
                 $this->entityManager->persist($anime);
             } catch (\Exception $e){
                 error_log($e->getMessage());

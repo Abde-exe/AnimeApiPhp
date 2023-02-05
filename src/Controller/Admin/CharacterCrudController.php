@@ -39,15 +39,15 @@ class CharacterCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
 
-        yield TextField::new('name', 'Name');
-        yield TextField::new('about', 'Bio')
-            ->onlyOnForms();
         yield TextField::new('file', 'Image' )
             ->setFormType(VichImageType::class)
             ->onlyOnForms();
         yield ImageField::new('img', 'Image')
             ->setBasePath($this->uploadDir.'/characters/')
             ->hideOnForm();
+        yield TextField::new('name', 'Name');
+        yield TextField::new('role', 'Role');
+
         yield AssociationField::new('anime', 'Anime')
             ->setCrudController(AnimeCrudController::class);
 

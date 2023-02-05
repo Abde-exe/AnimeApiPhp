@@ -4,8 +4,10 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\AnimeRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Stringable;
 use Symfony\Component\HttpFoundation\File\File;
@@ -43,6 +45,8 @@ class Anime implements Stringable
     #[UploadableField(mapping: 'animes', fileNameProperty:'image')]
     private ?File $file = null;
 
+    #[ORM\Column(type:Types::DATE_IMMUTABLE)]
+    private  DateTimeImmutable $updatedAt;
     public function __construct()
     {
         $this->characters = new ArrayCollection();
@@ -62,6 +66,7 @@ class Anime implements Stringable
     public function setTitle(string $title): self
     {
         $this->title = $title;
+        $this->updatedAt=new DateTimeImmutable();
 
         return $this;
     }
@@ -74,6 +79,7 @@ class Anime implements Stringable
     public function setImage(?string $image): self
     {
         $this->image = $image;
+        $this->updatedAt=new DateTimeImmutable();
 
         return $this;
     }
@@ -87,6 +93,7 @@ class Anime implements Stringable
     public function setGenres(string $genres): self
     {
         $this->genres = $genres;
+        $this->updatedAt=new DateTimeImmutable();
 
         return $this;
     }
@@ -109,6 +116,7 @@ class Anime implements Stringable
             $this->characters->add($character);
             $character->setAnime($this);
         }
+        $this->updatedAt=new DateTimeImmutable();
 
         return $this;
     }
@@ -133,6 +141,7 @@ class Anime implements Stringable
     public function setStudio(?Studio $studio): self
     {
         $this->studio = $studio;
+        $this->updatedAt=new DateTimeImmutable();
 
         return $this;
     }
@@ -151,6 +160,7 @@ class Anime implements Stringable
             $this->usersFaving->add($usersFaving);
             $usersFaving->addFavAnime($this);
         }
+        $this->updatedAt=new DateTimeImmutable();
 
         return $this;
     }
@@ -172,6 +182,7 @@ class Anime implements Stringable
     public function setFile(?File $file): self
     {
         $this->file = $file;
+        $this->updatedAt=new DateTimeImmutable();
 
         return $this;
     }

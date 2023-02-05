@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use App\Repository\CharacterRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -35,7 +36,7 @@ class Character
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    private ?string $about = null;
+    private ?string $role = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $img = null;
@@ -49,9 +50,16 @@ class Character
 
     #[UploadableField(mapping: 'characters', fileNameProperty:'img')]
     private ?File $file = null;
+
+
+
+
+    #[ORM\Column(type:Types::DATE_IMMUTABLE)]
+    private  DateTimeImmutable $updatedAt;
     public function __construct()
     {
         $this->usersFaving = new ArrayCollection();
+        $this->updatedAt=new DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -67,18 +75,20 @@ class Character
     public function setName(string $name): self
     {
         $this->name = $name;
+        $this->updatedAt=new DateTimeImmutable();
 
         return $this;
     }
 
-    public function getAbout(): ?string
+    public function getRole(): ?string
     {
-        return $this->about;
+        return $this->role;
     }
 
-    public function setAbout(string $about): self
+    public function setRole(string $role): self
     {
-        $this->about = $about;
+        $this->role = $role;
+        $this->updatedAt=new DateTimeImmutable();
 
         return $this;
     }
@@ -91,6 +101,7 @@ class Character
     public function setImg(?string $img): self
     {
         $this->img = $img;
+        $this->updatedAt=new DateTimeImmutable();
 
         return $this;
     }
@@ -103,6 +114,7 @@ class Character
     public function setAnime(?Anime $anime): self
     {
         $this->anime = $anime;
+        $this->updatedAt=new DateTimeImmutable();
 
         return $this;
     }
@@ -125,6 +137,7 @@ class Character
             $this->usersFaving->add($usersFaving);
             $usersFaving->addFavCharacter($this);
         }
+        $this->updatedAt=new DateTimeImmutable();
 
         return $this;
     }
@@ -152,5 +165,7 @@ class Character
     public function setFile(?File $file): void
     {
         $this->file = $file;
+        $this->updatedAt=new DateTimeImmutable();
+
     }
 }

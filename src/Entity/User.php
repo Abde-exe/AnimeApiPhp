@@ -37,6 +37,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: Character::class, inversedBy: 'usersFaving')]
     private Collection $favCharacters;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $name = null;
+
     public function __construct()
     {
         $this->favAnimes = new ArrayCollection();
@@ -157,6 +160,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeFavCharacter(Character $favCharacter): self
     {
         $this->favCharacters->removeElement($favCharacter);
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): self
+    {
+        $this->name = $name;
 
         return $this;
     }

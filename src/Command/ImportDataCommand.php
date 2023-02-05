@@ -5,6 +5,7 @@ namespace App\Command;
 use App\Entity\Anime;
 use App\Entity\Character;
 use App\Entity\Studio;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -13,6 +14,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Faker;
+
 
 
 #[AsCommand(
@@ -22,7 +26,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class ImportDataCommand extends Command
 {
     private $entityManager;
-    public function __construct(EntityManagerInterface $entityManager)
+
+    public function __construct(EntityManagerInterface $entityManager,   private readonly UserPasswordHasherInterface $passwordHasher)
     {
         $this->entityManager = $entityManager;
 
@@ -53,7 +58,7 @@ class ImportDataCommand extends Command
 
 
         //studios
-        $studioArray =array();
+        $studioArray = array();
 
         $json =  file_get_contents("https://api.jikan.moe/v4/producers/?limit=5");
         $data = json_decode($json, true);
@@ -65,8 +70,10 @@ class ImportDataCommand extends Command
             $this->entityManager->persist($studio);
         }
 
-        //animes
-        $animeArray = array();
+        //animes and their characters
+        $animeArray =array();
+        $characterArray =array();
+
         for ($i = 1; $i <= 20; $i++) {
             try {
                 sleep(1);
@@ -84,8 +91,8 @@ class ImportDataCommand extends Command
                 $anime->setImage($data['images']['jpg']['image_url']);
                 $anime->setGenres($data['genres'][0]['name']);
                 $anime->setStudio($studioArray[$i % 5]);
-                //array_push($animeArray, $anime);
                 sleep(1);
+                //getting all the characters of each anime
                 $json2 =  file_get_contents("https://api.jikan.moe/v4/anime/{$i}/characters");
                 $data2 = json_decode($json2, true);
                 if(isset($data2['error'])){
@@ -93,53 +100,59 @@ class ImportDataCommand extends Command
                     continue;
                 }
                 $dataChar = $data2["data"];
+                //for each retrieved character from the API :
+                //creating an instance of Character and adding it to DB with a relation to its anime.
                 foreach ($dataChar as $char){
                     $character = new Character();
                     $character->setName($char["character"]["name"]);
                     $character->setImg($char["character"]["images"]["jpg"]["image_url"]);
-                    $character->setAbout("");
+                    $character->setRole($char["role"]);
                     $anime->addCharacter($character);
+                    array_push($characterArray, $character);
                     $this->entityManager->persist($character);
                 }
-
+                array_push($animeArray, $anime);
+                $output->writeln(count($animeArray));
                 $this->entityManager->persist($anime);
             } catch (\Exception $e){
                 error_log($e->getMessage());
             }
             }
-        /*//characters
-        $characterArray = array();
-        for ($i = 1; $i <= 20; $i++) {
-            try {
-                sleep(1);
-            $json =  file_get_contents("https://api.jikan.moe/v4/anime/{$i}/characters");
-            $data = json_decode($json, true);
-            if(isset($data['error'])){
-                error_log("Error retrieving characters of anim with id {$i}: {$data['error']}");
-                continue;
-            }
-            $characters = $data['data'];
 
-                $character = new Anime();
-                $character->setTitle( $data['title']);
-                $character->setImage($data['images']['jpg']['image_url']);
-                $character->setGenres($data['genres'][0]['name']);
-                $character->setStudio($studioArray[$i % 5]);
-                array_push($characterArray, $character);
-                $this->entityManager->persist($character);
-            } catch (\Exception $e){
-                error_log($e->getMessage());
-            }
-            }*/
+        //users
+        $faker = Faker\Factory::create('fr_FR');
 
+        //adding 10 users with Faker
+        for ($i= 1; $i <= 10 ; $i++) {
+            $user = new User();
+            $user->setEmail($faker->email);
+            $user->setName($faker->name);
+            $user->setPassword($this->passwordHasher->hashPassword($user, 'password'));
+            $user->setRoles(['ROLE_USER']);
+
+            //each user gets from 1 to 5 favorites characters randomly from the generated characters previously
+            for ($j = 0; $j < rand(1, 5); $j++){
+                $user->addFavCharacter($characterArray[rand(0,count($characterArray)-1)]);
+            }
+            //same thing for favs animes
+            for ($j = 0; $j < rand(1, 5); $j++){
+                $user->addFavAnime($animeArray[rand(0,count($animeArray) -1)]);
+            }
+            $this->entityManager->persist($user);
+        }
+
+
+
+        //admin
+        $admin = new User();
+        $admin->setEmail('admin@mail.com');
+        $admin->setName("Admin");
+        $admin->setPassword($this->passwordHasher->hashPassword($admin,'admin'));
+        $admin->setRoles(['ROLE_ADMIN']);
+        $this->entityManager->persist($admin);
 
 
         $this->entityManager->flush();
-
-        /*
-        $client = HttpClient::create();
-        $response = $client->request('GET', 'https://api.example.com/data');
-        $data = $response->toArray();*/
 
         $output->writeln('Data imported successfully.');
         return Command::SUCCESS;

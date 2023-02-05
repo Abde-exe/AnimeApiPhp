@@ -50,26 +50,46 @@ class ImportDataCommand extends Command
 
         $io->success('You have a new command! Now make it your own! Pass --help to see your options.');
 
-        //animes
-        for ($i = 15; $i <= 35; $i++){
-            sleep(0.5);
-            try {
 
+        //studios
+        $studioArray =array();
+
+        $json =  file_get_contents("https://api.jikan.moe/v4/producers/?limit=5");
+        $data = json_decode($json, true);
+        $studios = $data['data'];
+        foreach ($studios as $stud) {
+            $studio = new Studio();
+            $studio->setName($stud['titles'][0]['title']);
+           array_push($studioArray, $studio);
+            $this->entityManager->persist($studio);
+        }
+
+        //animes
+        $animeArray = array();
+        for ($i = 1; $i <= 20; $i++) {
+            try {
+                sleep(1);
             $json =  file_get_contents("https://api.jikan.moe/v4/anime/{$i}");
             $data = json_decode($json, true);
+            if(isset($data['error'])){
+                error_log("Error retrieving anime with id {$i}: {$data['error']}");
+                continue;
+            }
             $data = $data['data'];
 
                 $anime = new Anime();
                 $anime->setTitle( $data['title']);
                 $anime->setImage($data['images']['jpg']['image_url']);
-                $anime->setGenres($data['genres']);
-                $anime->setStudio(new Studio('title'));
+                $anime->setGenres($data['genres'][0]['name']);
+                $anime->setStudio($studioArray[$i % 5]);
+                array_push($animeArray, $anime);
                 $this->entityManager->persist($anime);
             } catch (\Exception $e){
-                //error
+                error_log($e->getMessage());
+            }
             }
 
-            }
+
 
 
         $this->entityManager->flush();

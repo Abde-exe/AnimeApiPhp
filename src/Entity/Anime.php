@@ -24,8 +24,8 @@ class Anime
     #[ORM\Column(length: 255)]
     private ?string $image = null;
 
-    #[ORM\Column(type: Types::ARRAY, nullable: true)]
-    private array $genres = [];
+    #[ORM\Column(length: 255)]
+    private ?string $genres = null;
 
     #[ORM\OneToMany(mappedBy: 'anime', targetEntity: Character::class, orphanRemoval: true)]
     private Collection $characters;
@@ -71,12 +71,12 @@ class Anime
         return $this;
     }
 
-    public function getGenres(): array
+    public function getGenres(): ?string
     {
         return $this->genres;
     }
 
-    public function setGenres(?array $genres): self
+    public function setGenres(string $genres): self
     {
         $this->genres = $genres;
 

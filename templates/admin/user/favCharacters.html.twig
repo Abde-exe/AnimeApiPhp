@@ -1,0 +1,15 @@
+{# @var ed EasyCorp Bundle EasyAdminBundle Context AdminContext #}
+{# @var field \EasyCorp\ Bundle\EasyAdminBundle\Dto\FieldDto #}
+{# @var entity \EasyCorp\ Bundle \EasyAdminBundle \Dto \EntityDto #}
+{% if ea.crud.currentAction == 'detail' %}
+    <ul class="list-group">
+        {% for favChara in field.value %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <h4> {{ favChara.name}}</h4> from {{favChara.anime }}
+        <Li>
+            {%endfor%}
+    </ul>
+{% else %}
+    <span class="badge badge-secondary">{{ field.value|length}}</span>
+
+{% endif %}

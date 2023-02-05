@@ -88,7 +88,30 @@ class ImportDataCommand extends Command
                 error_log($e->getMessage());
             }
             }
+        /*//characters
+        $characterArray = array();
+        for ($i = 1; $i <= 20; $i++) {
+            try {
+                sleep(1);
+            $json =  file_get_contents("https://api.jikan.moe/v4/anime/{$i}/characters");
+            $data = json_decode($json, true);
+            if(isset($data['error'])){
+                error_log("Error retrieving characters of anim with id {$i}: {$data['error']}");
+                continue;
+            }
+            $characters = $data['data'];
 
+                $character = new Anime();
+                $character->setTitle( $data['title']);
+                $character->setImage($data['images']['jpg']['image_url']);
+                $character->setGenres($data['genres'][0]['name']);
+                $character->setStudio($studioArray[$i % 5]);
+                array_push($characterArray, $character);
+                $this->entityManager->persist($character);
+            } catch (\Exception $e){
+                error_log($e->getMessage());
+            }
+            }*/
 
 
 

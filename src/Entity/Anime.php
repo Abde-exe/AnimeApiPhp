@@ -6,12 +6,16 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\AnimeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Stringable;
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation\Uploadable;
+use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
 
 #[ORM\Entity(repositoryClass: AnimeRepository::class)]
 #[ApiResource]
-class Anime
+#[Uploadable]
+class Anime implements Stringable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -21,7 +25,7 @@ class Anime
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
 
     #[ORM\Column(length: 255)]
@@ -35,6 +39,9 @@ class Anime
 
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'favAnimes')]
     private Collection $usersFaving;
+
+    #[UploadableField(mapping: 'animes', fileNameProperty:'image')]
+    private ?File $file = null;
 
     public function __construct()
     {
@@ -64,12 +71,13 @@ class Anime
         return $this->image;
     }
 
-    public function setImage(string $image): self
+    public function setImage(?string $image): self
     {
         $this->image = $image;
 
         return $this;
     }
+
 
     public function getGenres(): ?string
     {
@@ -81,6 +89,10 @@ class Anime
         $this->genres = $genres;
 
         return $this;
+    }
+
+    public function __toString(){
+        return $this->title;
     }
 
     /**
@@ -148,6 +160,18 @@ class Anime
         if ($this->usersFaving->removeElement($usersFaving)) {
             $usersFaving->removeFavAnime($this);
         }
+
+        return $this;
+    }
+
+    public function getFile(): ?File
+    {
+        return $this->file;
+    }
+
+    public function setFile(?File $file): self
+    {
+        $this->file = $file;
 
         return $this;
     }
